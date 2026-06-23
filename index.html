@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NaTech 9 – Kapitel 6: Evolution nachvollziehen</title>
+<style>
+  :root {
+    --gruen: #4a7c3f;
+    --gruen-hell: #6aab5e;
+    --gruen-dunkel: #2e5428;
+    --gruen-bg: #eaf4e7;
+    --gruen-mid: #c4e0bc;
+    --akzent: #d4a843;
+    --akzent-hell: #f0cc76;
+    --text: #1a2e16;
+    --text-hell: #4a5e45;
+    --weiss: #ffffff;
+    --grau-hell: #f5f9f4;
+    --grau: #e0ead d;
+    --schatten: 0 2px 12px rgba(46,84,40,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--grau-hell);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--gruen-dunkel) 0%, var(--gruen) 60%, var(--gruen-hell) 100%);
+    color: var(--weiss);
+    padding: 28px 32px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .header-kapitel {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    background: var(--gruen-dunkel);
+    overflow-x: auto;
+    gap: 0;
+  }
+  .tab-btn {
+    flex: 0 0 auto;
+    padding: 12px 18px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.65);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.9); }
+  .tab-btn.aktiv {
+    color: var(--weiss);
+    border-bottom-color: var(--akzent);
+  }
+
+  /* MAIN CONTENT */
+  .inhalt { display: none; padding: 24px 20px; max-width: 900px; margin: 0 auto; }
+  .inhalt.aktiv { display: block; }
+
+  /* SECTION CARDS */
+  .karte {
+    background: var(--weiss);
+    border-radius: 10px;
+    box-shadow: var(--schatten);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .karte-kopf {
+    background: var(--gruen);
+    color: var(--weiss);
+    padding: 12px 18px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .karte-kopf .uk-nr {
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .karte-body { padding: 16px 18px; }
+
+  /* KONZEPT GRID */
+  .konzept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .konzept-item {
+    background: var(--gruen-bg);
+    border-left: 4px solid var(--gruen);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .konzept-item strong {
+    display: block;
+    font-size: 13px;
+    color: var(--gruen-dunkel);
+    margin-bottom: 4px;
+  }
+  .konzept-item p {
+    font-size: 12px;
+    color: var(--text-hell);
+    line-height: 1.45;
+  }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: var(--gruen-mid);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -24px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gruen);
+    border: 2px solid var(--weiss);
+    box-shadow: 0 0 0 2px var(--gruen);
+  }
+  .timeline-zeit {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gruen-dunkel);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .timeline-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+  /* VERGLEICHSTABELLE */
+  .vergl-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  .vergl-table th {
+    background: var(--gruen);
+    color: var(--weiss);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 12px;
+  }
+  .vergl-table td { padding: 8px 12px; border-bottom: 1px solid var(--gruen-mid); vertical-align: top; }
+  .vergl-table tr:last-child td { border-bottom: none; }
+  .vergl-table tr:nth-child(even) td { background: var(--gruen-bg); }
+
+  /* GLOSSAR */
+  .suche-input {
+    width: 100%; padding: 10px 14px;
+    border: 2px solid var(--gruen-mid);
+    border-radius: 8px;
+    font-size: 14px; color: var(--text);
+    margin-bottom: 16px;
+    outline: none;
+  }
+  .suche-input:focus { border-color: var(--gruen); }
+  .glossar-liste { list-style: none; }
+  .glossar-eintrag {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--gruen-mid);
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .glossar-eintrag:hover { background: var(--gruen-bg); margin: 0 -8px; padding: 10px 8px; border-radius: 6px; }
+  .glossar-term {
+    min-width: 200px; max-width: 200px;
+    font-weight: 700; color: var(--gruen-dunkel);
+    font-size: 13px; padding-right: 12px;
+  }
+  .glossar-def { font-size: 13px; color: var(--text); line-height: 1.45; }
+  .glossar-badge {
+    display: inline-block; margin-left: 6px;
+    background: var(--gruen-mid); color: var(--gruen-dunkel);
+    font-size: 10px; font-weight: 700; border-radius: 4px;
+    padding: 1px 5px; vertical-align: middle;
+  }
+
+  /* LERNKÄRTCHEN */
+  .kaertchen-controls {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+  }
+  .kaertchen-controls select, .kaertchen-controls button {
+    padding: 8px 14px; border-radius: 7px; font-size: 13px; cursor: pointer;
+    border: 2px solid var(--gruen-mid); background: var(--weiss); color: var(--text);
+  }
+  .kaertchen-controls button {
+    background: var(--gruen); color: var(--weiss); border-color: var(--gruen);
+    font-weight: 700;
+  }
+  .kaertchen-controls button:hover { background: var(--gruen-dunkel); }
+
+  .kaertchen-area { perspective: 1000px; margin-bottom: 16px; }
+  .kaertchen {
+    width: 100%; max-width: 560px; height: 200px;
+    margin: 0 auto;
+    position: relative;
+    cursor: pointer;
+  }
+  .kaertchen-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.45s ease;
+    transform-style: preserve-3d;
+  }
+  .kaertchen.umgedreht .kaertchen-inner { transform: rotateY(180deg); }
+  .kaertchen-vorderseite, .kaertchen-rueckseite {
+    position: absolute; inset: 0;
+    border-radius: 12px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 20px 24px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: var(--schatten);
+  }
+  .kaertchen-vorderseite {
+    background: linear-gradient(135deg, var(--gruen-dunkel), var(--gruen));
+    color: var(--weiss);
+  }
+  .kaertchen-rueckseite {
+    background: var(--weiss);
+    border: 2px solid var(--gruen-mid);
+    transform: rotateY(180deg);
+    color: var(--text);
+  }
+  .kaertchen-vorderseite .frage-text {
+    font-size: 16px; font-weight: 600; text-align: center; line-height: 1.4;
+  }
+  .kaertchen-vorderseite .tipp {
+    font-size: 11px; opacity: 0.7; margin-top: 12px;
+  }
+  .kaertchen-rueckseite .antwort-text {
+    font-size: 14px; text-align: center; line-height: 1.5;
+  }
+  .kaertchen-nav {
+    display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 12px;
+  }
+  .kaertchen-nav button {
+    padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 700;
+    border: 2px solid var(--gruen); background: var(--weiss); color: var(--gruen);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .kaertchen-nav button:hover { background: var(--gruen); color: var(--weiss); }
+  .kaertchen-fortschritt { font-size: 13px; color: var(--text-hell); font-weight: 600; }
+
+  /* QUIZ */
+  .quiz-controls {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .quiz-controls select, .quiz-start-btn {
+    padding: 9px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    border: 2px solid var(--gruen-mid);
+  }
+  .quiz-start-btn {
+    background: var(--gruen); color: var(--weiss); border-color: var(--gruen);
+    font-weight: 700; cursor: pointer;
+  }
+  .quiz-start-btn:hover { background: var(--gruen-dunkel); }
+
+  .quiz-fortschritt-bar {
+    height: 6px; background: var(--gruen-mid); border-radius: 3px; margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .quiz-fortschritt-fill {
+    height: 100%; background: var(--gruen); border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .quiz-frage-block { margin-bottom: 24px; }
+  .quiz-frage-text {
+    font-size: 15px; font-weight: 700; color: var(--gruen-dunkel);
+    margin-bottom: 14px; line-height: 1.4;
+  }
+  .quiz-optionen { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option {
+    padding: 11px 16px; border-radius: 8px; border: 2px solid var(--gruen-mid);
+    background: var(--weiss); cursor: pointer; font-size: 13px; text-align: left;
+    transition: all 0.15s; color: var(--text);
+  }
+  .quiz-option:hover:not(:disabled) { border-color: var(--gruen); background: var(--gruen-bg); }
+  .quiz-option.richtig { border-color: #2e7d32; background: #e8f5e9; color: #1b5e20; font-weight: 700; }
+  .quiz-option.falsch { border-color: #c62828; background: #ffebee; color: #b71c1c; }
+  .quiz-option:disabled { cursor: default; }
+
+  .quiz-feedback {
+    margin-top: 10px; padding: 10px 14px; border-radius: 7px;
+    font-size: 13px; line-height: 1.4; display: none;
+  }
+  .quiz-feedback.richtig { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #2e7d32; }
+  .quiz-feedback.falsch { background: #ffebee; color: #b71c1c; border-left: 4px solid #c62828; }
+
+  .quiz-weiter-btn {
+    margin-top: 14px; padding: 9px 22px; border-radius: 8px;
+    background: var(--gruen); color: var(--weiss); border: none;
+    font-size: 14px; font-weight: 700; cursor: pointer; display: none;
+  }
+  .quiz-weiter-btn:hover { background: var(--gruen-dunkel); }
+
+  .quiz-ergebnis {
+    text-align: center; padding: 32px 20px; display: none;
+  }
+  .quiz-ergebnis .score-zahl {
+    font-size: 52px; font-weight: 900; color: var(--gruen);
+    line-height: 1;
+  }
+  .quiz-ergebnis .score-label { font-size: 16px; color: var(--text-hell); margin-bottom: 20px; }
+  .quiz-ergebnis .score-msg { font-size: 15px; color: var(--text); margin-bottom: 24px; }
+
+  .falsch-review { margin-top: 24px; text-align: left; }
+  .falsch-review h3 { font-size: 14px; font-weight: 700; color: var(--gruen-dunkel); margin-bottom: 12px; }
+  .falsch-item {
+    background: #fff8e1; border-left: 4px solid var(--akzent);
+    border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px;
+  }
+  .falsch-item .fi-frage { font-weight: 700; margin-bottom: 4px; }
+  .falsch-item .fi-richtig { color: #2e7d32; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 20px; }
+    .glossar-term { min-width: 130px; max-width: 130px; }
+    .konzept-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-kapitel">NaTech 9 &nbsp;&bull;&nbsp; Kapitel 6</div>
+  <h1>Evolution nachvollziehen</h1>
+  <div class="header-sub">Lern- und Übungsmaterial &nbsp;&mdash;&nbsp; Unterkapitel 6.1&ndash;6.4</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn aktiv" onclick="zeigeTab('ueberblick', this)">Überblick</button>
+  <button class="tab-btn" onclick="zeigeTab('glossar', this)">Glossar</button>
+  <button class="tab-btn" onclick="zeigeTab('lernkaertchen', this)">Lernkärtchen</button>
+  <button class="tab-btn" onclick="zeigeTab('quiz', this)">Quiz</button>
+</div>
+
+<!-- ============ ÜBERBLICK ============ -->
+<div id="tab-ueberblick" class="inhalt aktiv">
+
+  <div class="karte">
+    <div class="karte-kopf">
+      <span class="uk-nr">6.1</span>
+      Entstehung der Lebewesen &amp; Rolle des Sauerstoffs
+    </div>
+    <div class="karte-body">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~4,5 Mia. Jahren</div>
+          <div class="timeline-text">Die Erde entsteht.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~3,7 Mia. Jahren</div>
+          <div class="timeline-text">Erste Lebewesen (Urbakterien) entstehen.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~3,5 Mia. Jahren</div>
+          <div class="timeline-text">Erste Bakterien, die Fotosynthese betreiben und Sauerstoff produzieren, entstehen. O₂ wird ins Meer freigesetzt, reagiert mit Eisensalzen → Eisenoxide lagern am Meeresgrund ab.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~2 Mia. Jahren</div>
+          <div class="timeline-text">Kaum noch Eisensalze im Meer. Sauerstoff reichert sich im Meer an. Viele damalige Lebewesen sterben, da O₂ für sie giftig ist (Massenaussterben).</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~1,5 Mia. Jahren</div>
+          <div class="timeline-text">Erste Lebewesen entstehen, die Sauerstoff nutzen können (aerobe Atmung). Zellatmung: O₂ + Glukose → H₂O + CO₂ + Energie.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~700 Mio. Jahren</div>
+          <div class="timeline-text">Sauerstoff reichert sich stark in der Atmosphäre an → Ozonschicht (O₃) entsteht, schützt vor UV-Strahlung.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~400 Mio. Jahren</div>
+          <div class="timeline-text">Erste Landpflanzen entstehen. Fotosynthese produziert zusätzlichen Sauerstoff. O₂-Gehalt steigt auf über 30 %.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Vor ~350 Mio. Jahren</div>
+          <div class="timeline-text">Erste Wirbeltiere leben an Land.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-zeit">Heute</div>
+          <div class="timeline-text">O₂-Gehalt in der Atmosphäre beträgt ca. 20 %.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf">
+      <span class="uk-nr">6.2</span>
+      Lebewesen ordnen: Artbegriffe, Homologie &amp; Kladogramme
+    </div>
+    <div class="karte-body">
+      <div class="konzept-grid">
+        <div class="konzept-item">
+          <strong>Morphologischer Artbegriff</strong>
+          <p>Lebewesen werden anhand ihres Baus (Gestalt/Form) in Arten eingeteilt. Entscheidend sind Gemeinsamkeiten und Unterschiede in der Bauweise.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Biologischer Artbegriff</strong>
+          <p>Lebewesen gehören zur selben Art, wenn sie untereinander fortpflanzungsfähige Nachkommen zeugen können. (Am häufigsten verwendet.)</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Homologie</strong>
+          <p>Körperteile verschiedener Lebewesen sind gleich aufgebaut (gemeinsamer Ursprung), erfüllen aber unterschiedliche Funktionen.<br><em>Bsp.: Vordergliedmaßen der Wirbeltiere</em></p>
+        </div>
+        <div class="konzept-item">
+          <strong>Analogie</strong>
+          <p>Körperteile erfüllen dieselbe Funktion, sind aber unterschiedlich aufgebaut (kein gemeinsamer Ursprung).<br><em>Bsp.: Flügel von Vögeln &amp; Insekten</em></p>
+        </div>
+        <div class="konzept-item">
+          <strong>Kladogramm</strong>
+          <p>Spezielle Art von Stammbaum. Zeigt Abstammungen und Verwandtschaften. Jede Verzweigung wird durch ein neu vorhandenes Merkmal begründet.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Klasse</strong>
+          <p>Zusammenfassung von Lebewesen mit gleichen oder ähnlichen Merkmalen. Wirbeltierklassen: Rundmäuler, Knorpelfische, Knochenfische, Amphibien, Reptilien, Vögel, Säugetiere.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf">
+      <span class="uk-nr">6.3</span>
+      Wie entstand die Vielfalt der Lebewesen? &ndash; Evolutionstheorien
+    </div>
+    <div class="karte-body">
+      <table class="vergl-table">
+        <tr>
+          <th>Merkmal</th>
+          <th>Lamarck (widerlegt)</th>
+          <th>Darwin / Wallace (gültig)</th>
+        </tr>
+        <tr>
+          <td>Veränderlichkeit</td>
+          <td>Lebewesen können sich im Laufe des Lebens verändern (Gebrauch/Nichtgebrauch)</td>
+          <td>Innerhalb einer Art gibt es natürliche Variabilität (Rekombination, Mutation)</td>
+        </tr>
+        <tr>
+          <td>Vererbung</td>
+          <td>Im Leben erworbene Eigenschaften werden vererbt</td>
+          <td>Nur genetisch verankerte Merkmale werden vererbt</td>
+        </tr>
+        <tr>
+          <td>Selektion</td>
+          <td>Kein Selektionsgedanke (Bedürfnis treibt Anpassung)</td>
+          <td>Natürliche Selektion: gut angepasste Individuen überleben und pflanzen sich fort</td>
+        </tr>
+        <tr>
+          <td>Beispiel (Giraffe)</td>
+          <td>Giraffen streckten Hals bewusst → Hals wurde länger → weitergegeben</td>
+          <td>Zufällig längere Hälse hatten Vorteil → mehr Nachkommen → Merkmal setzt sich durch</td>
+        </tr>
+        <tr>
+          <td>Status</td>
+          <td style="color:#c62828; font-weight:700;">Widerlegt</td>
+          <td style="color:#2e7d32; font-weight:700;">Wissenschaftlich anerkannt</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf">
+      <span class="uk-nr">6.4</span>
+      Evolutionsfaktoren
+    </div>
+    <div class="karte-body">
+      <div class="konzept-grid">
+        <div class="konzept-item">
+          <strong>Variabilität</strong>
+          <p>Individuen einer Art unterscheiden sich leicht voneinander. Ursachen: Rekombination (sexuelle Fortpflanzung) und Mutation.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Mutation</strong>
+          <p>Veränderung im Erbgut. Kann spontan oder durch Strahlung/Chemikalien ausgelöst werden. Wird nur vererbt, wenn sie in Geschlechtszellen auftritt.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Natürliche Selektion</strong>
+          <p>Gut angepasste Individuen überleben eher, pflanzen sich mehr fort und geben ihre Merkmale weiter. = <em>Survival of the fittest</em> (Überleben des am besten Angepassten).</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Sexuelle Selektion</strong>
+          <p>Merkmale setzen sich durch, weil sie beim Geschlechtspartner attraktiv wirken (nicht weil sie Überlebensvorteil bieten). Bsp.: Pfauenfedern.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Zufallseffekte</strong>
+          <p>Katastrophen führen zu zufälligem Überleben/Sterben → beeinflussen Evolutionsvorgänge.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Isolation</strong>
+          <p>Trennung von Individuen einer Art (räumlich oder jahreszeitlich) verhindert Austausch von Erbmaterial → neue Arten entstehen. Bsp.: Grau- &amp; Grünspecht; Gras- &amp; Wasserfrosch.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Spezialisierung / Nischenbildung</strong>
+          <p>Individuen spezialisieren sich auf unterschiedliche Nahrung/Lebensraum → können sich nicht mehr untereinander fortpflanzen → neue Arten. Bsp.: Darwinfinken.</p>
+        </div>
+        <div class="konzept-item">
+          <strong>Künstliche Selektion</strong>
+          <p>Mensch greift bewusst in Fortpflanzungserfolg ein (Zucht). Züchter bestimmen, welche Individuen sich fortpflanzen dürfen.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end ueberblick -->
+
+<!-- ============ GLOSSAR ============ -->
+<div id="tab-glossar" class="inhalt">
+  <div class="karte">
+    <div class="karte-kopf">Fachbegriffe &ndash; Evolution</div>
+    <div class="karte-body">
+      <input type="text" class="suche-input" id="glossarSuche" placeholder="🔍 Fachbegriff suchen..." oninput="filterGlossar()" />
+      <ul class="glossar-liste" id="glossarListe"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LERNKÄRTCHEN ============ -->
+<div id="tab-lernkaertchen" class="inhalt">
+  <div class="karte">
+    <div class="karte-kopf">Lernkärtchen</div>
+    <div class="karte-body">
+      <div class="kaertchen-controls">
+        <select id="kaertchenFilter" onchange="ladeKaertchen()">
+          <option value="alle">Alle Unterkapitel</option>
+          <option value="6.1">6.1 &ndash; Entstehung &amp; Sauerstoff</option>
+          <option value="6.2">6.2 &ndash; Lebewesen ordnen</option>
+          <option value="6.3">6.3 &ndash; Evolutionstheorien</option>
+          <option value="6.4">6.4 &ndash; Evolutionsfaktoren</option>
+        </select>
+        <button onclick="mischeKaertchen()">⇄ Mischen</button>
+      </div>
+
+      <div class="kaertchen-area">
+        <div class="kaertchen" id="dasKaertchen" onclick="dreheKaertchen()">
+          <div class="kaertchen-inner" id="kaertchenInner">
+            <div class="kaertchen-vorderseite">
+              <div class="frage-text" id="kaertchenFrage">Lade...</div>
+              <div class="tipp">→ Tippe, um die Antwort zu sehen</div>
+            </div>
+            <div class="kaertchen-rueckseite">
+              <div class="antwort-text" id="kaertchenAntwort"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kaertchen-nav">
+        <button onclick="vorherigesKaertchen()">&larr; Zurück</button>
+        <span class="kaertchen-fortschritt" id="kaertchenFortschritt">1 / 1</span>
+        <button onclick="naechstesKaertchen()">Weiter &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div id="tab-quiz" class="inhalt">
+  <div class="karte">
+    <div class="karte-kopf">Quiz</div>
+    <div class="karte-body">
+      <div id="quizStart">
+        <div class="quiz-controls">
+          <select id="quizThema">
+            <option value="alle">Alle Unterkapitel</option>
+            <option value="6.1">6.1 &ndash; Entstehung &amp; Sauerstoff</option>
+            <option value="6.2">6.2 &ndash; Lebewesen ordnen</option>
+            <option value="6.3">6.3 &ndash; Evolutionstheorien</option>
+            <option value="6.4">6.4 &ndash; Evolutionsfaktoren</option>
+          </select>
+          <select id="quizSchwierigkeit">
+            <option value="alle">Alle Schwierigkeiten</option>
+            <option value="leicht">Leicht</option>
+            <option value="mittel">Mittel</option>
+            <option value="schwer">Schwer</option>
+          </select>
+          <button class="quiz-start-btn" onclick="startQuiz()">Quiz starten</button>
+        </div>
+        <p style="font-size:13px; color:var(--text-hell);">Wähle Thema und Schwierigkeitsgrad, dann starte das Quiz. Die Fragen werden zufällig ausgewählt.</p>
+      </div>
+
+      <div id="quizBereich" style="display:none;">
+        <div class="quiz-fortschritt-bar">
+          <div class="quiz-fortschritt-fill" id="quizBalken"></div>
+        </div>
+        <div id="quizFrageBlock" class="quiz-frage-block">
+          <div class="quiz-frage-text" id="quizFrageText"></div>
+          <div class="quiz-optionen" id="quizOptionen"></div>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+          <button class="quiz-weiter-btn" id="quizWeiterBtn" onclick="naechsteFrage()">Nächste Frage &rarr;</button>
+        </div>
+      </div>
+
+      <div class="quiz-ergebnis" id="quizErgebnis">
+        <div class="score-zahl" id="quizScoreZahl"></div>
+        <div class="score-label" id="quizScoreLabel"></div>
+        <div class="score-msg" id="quizScoreMsg"></div>
+        <button class="quiz-start-btn" onclick="resetQuiz()">Nochmals spielen</button>
+        <div class="falsch-review" id="falschReview"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================
+// DATEN
+// ========================
+
+var glossarDaten = [
+  { term: "Albinismus", def: "Mutation, bei der Lebewesen eine sehr helle Haut bzw. weißes Fell haben; ein Beispiel für eine auffällige Mutation.", uk: "6.4" },
+  { term: "Analogie", def: "Körperteile verschiedener Lebewesen erfüllen die gleiche Funktion, sind aber unterschiedlich aufgebaut (kein gemeinsamer Ursprung). Bsp.: Flügel von Vögeln und Insekten.", uk: "6.2" },
+  { term: "Archaeopteryx", def: "Übergangsform zwischen Reptil (Dinosaurier) und Vogel. Beweis für die Veränderlichkeit von Arten.", uk: "6.2" },
+  { term: "Artbegriff", def: "Definition, nach der Lebewesen in Arten eingeteilt werden. Wichtigste Varianten: morphologischer und biologischer Artbegriff.", uk: "6.2" },
+  { term: "Biologischer Artbegriff", def: "Lebewesen gehören zur selben Art, wenn sie untereinander fortpflanzungsfähige Nachkommen zeugen können. Meist verwendete Definition.", uk: "6.2" },
+  { term: "Darwin, Charles", def: "Englischer Naturforscher (1809–1882). Stellte zusammen mit Wallace die Evolutionstheorie auf, die heute als wissenschaftliche Grundlage gilt.", uk: "6.3" },
+  { term: "Darwinfinken", def: "Vogelgruppe auf den Galapagos-Inseln, benannt nach Darwin. Unterscheiden sich vor allem durch ihre Schnabelform – Beispiel für Spezialisierung/Nischenbildung.", uk: "6.4" },
+  { term: "Evolution", def: "Entwicklung von Arten über mehrere Generationen hinweg. Beschreibt die Entstehung und Veränderung von Lebewesen.", uk: "6.3" },
+  { term: "Evolutionsfaktoren", def: "Faktoren, die der Evolution zugrunde liegen: Variabilität, Mutation, natürliche Selektion, sexuelle Selektion, Zufallseffekte, Isolation, Spezialisierung.", uk: "6.4" },
+  { term: "Evolutionstheorie", def: "Wissenschaftliche Theorie, die die Entwicklung von Arten erklärt. Die gültige Theorie stammt von Darwin und Wallace.", uk: "6.3" },
+  { term: "Fossil", def: "Versteinerter Fund eines Lebewesens, älter als 10’000 Jahre. Liefert Belege für die Veränderlichkeit von Arten.", uk: "6.2" },
+  { term: "Fotosynthese", def: "Prozess, bei dem Pflanzen/Bakterien CO₂ und H₂O mit Sonnenenergie in Glukose und Sauerstoff umwandeln. Wichtig für O₂-Produktion.", uk: "6.1" },
+  { term: "Homologie", def: "Körperteile verschiedener Lebewesen sind gleich aufgebaut (gemeinsamer Ursprung), erfüllen aber unterschiedliche Funktionen. Bsp.: Vordergliedmaßen der Wirbeltiere.", uk: "6.2" },
+  { term: "Ichthyostega", def: "Ältestes bekanntes Landtier (≈ 350 Mio. Jahre alt). Übergangsform zwischen Fisch und Landwirbeltier.", uk: "6.2" },
+  { term: "Isolation", def: "Trennung von Individuen einer Art (räumlich oder jahreszeitlich) unterbindet den Austausch von Erbmaterial → neue Arten können entstehen.", uk: "6.4" },
+  { term: "Kladogramm", def: "Spezielle Art von Stammbaum, der Abstammungen und Verwandtschaften zeigt. Jede Verzweigung ist durch ein neu vorhandenes Merkmal begründet.", uk: "6.2" },
+  { term: "Klasse", def: "Zusammenfassung von Lebewesen mit gleichen oder ähnlichen Merkmalen. Die Wirbeltierklassen sind: Rundmäuler, Knorpelfische, Knochenfische, Amphibien, Reptilien, Vögel, Säugetiere.", uk: "6.2" },
+  { term: "Künstliche Selektion", def: "Mensch greift bewusst in den Fortpflanzungserfolg von Tieren/Pflanzen ein (Zucht). Züchter bestimmen, welche Individuen sich fortpflanzen dürfen.", uk: "6.4" },
+  { term: "Lamarck, Jean-Baptiste", def: "Französischer Naturforscher (1744–1829). Stellte eine Evolutionstheorie auf, die heute als widerlegt gilt.", uk: "6.3" },
+  { term: "Massenaussterben", def: "Ereignis vor ca. 2 Mia. Jahren: viele damalige Lebewesen starben, da der zunehmende Sauerstoff für sie giftig war.", uk: "6.1" },
+  { term: "Morphologischer Artbegriff", def: "Lebewesen werden aufgrund ihres Baus (Gestalt/Form) in Arten eingeteilt. Maßgebend sind Gemeinsamkeiten und Unterschiede in der Bauweise.", uk: "6.2" },
+  { term: "Mutation", def: "Veränderung im Erbgut. Kann spontan oder durch Strahlung/Chemikalien ausgelöst werden. In Geschlechtszellen: vererbbar. Trägt zur Variabilität bei.", uk: "6.4" },
+  { term: "Natürliche Selektion", def: "Gut an die Umgebung angepasste Lebewesen überleben eher und pflanzen sich mehr fort. Ihre Merkmale werden häufiger in der nächsten Generation. = Survival of the fittest.", uk: "6.4" },
+  { term: "Nischenbildung / Spezialisierung", def: "Individuen spezialisieren sich auf unterschiedliche Nahrung/Lebensraum → können sich nicht mehr untereinander fortpflanzen → neue Arten entstehen.", uk: "6.4" },
+  { term: "Ozonschicht", def: "Schicht aus O₃ in der Atmosphäre. Entstand vor ca. 700 Mio. Jahren. Schützt die Erde vor intensiver Sonneneinstrahlung (UV). Ermöglichte Leben an Land.", uk: "6.1" },
+  { term: "Rekombination", def: "Durchmischung der Erbanlagen bei sexueller Fortpflanzung. Führt dazu, dass Nachkommen sich voneinander unterscheiden (Variabilität).", uk: "6.4" },
+  { term: "Sexuelle Selektion", def: "Merkmale setzen sich durch, weil sie beim Geschlechtspartner attraktiv wirken. Beispiel: Pfauenfedern beim Männchen.", uk: "6.4" },
+  { term: "Stammbaum", def: "Darstellung von Abstammungen und Verwandtschaften von Lebewesen. Kladogramme sind eine spezielle Form von Stammbaumdarstellungen.", uk: "6.2" },
+  { term: "Survival of the fittest", def: "Englischer Ausdruck für natürliche Selektion: Das Überleben des am besten an die Umgebung angepassten Lebewesens. Nicht »des Stärksten«!", uk: "6.4" },
+  { term: "Urbakterien", def: "Erste Lebewesen auf der Erde, entstanden vor ca. 3,7 Mia. Jahren.", uk: "6.1" },
+  { term: "Variabilität", def: "Individuen einer Art unterscheiden sich leicht voneinander. Grundlage für Evolution. Ursachen: Rekombination und Mutation.", uk: "6.4" },
+  { term: "Wallace, Alfred Russel", def: "Englischer Naturforscher (1823–1913). Entwickelte unabhängig von Darwin eine sehr ähnliche Evolutionstheorie und veröffentlichte sie gemeinsam mit ihm.", uk: "6.3" },
+  { term: "Wirbeltiere", def: "Tiergruppe mit Wirbelsäule. Umfasst 7 Klassen: Rundmäuler, Knorpelfische, Knochenfische, Amphibien, Reptilien, Vögel, Säugetiere.", uk: "6.2" },
+  { term: "Zellatmung (aerob)", def: "Sauerstoff und Traubenzucker werden in Wasser und CO₂ umgewandelt. Dabei wird Energie freigesetzt. Grundlage des Lebens energienutzender Lebewesen.", uk: "6.1" },
+  { term: "Zufallseffekte", def: "Größere Katastrophen führen zu zufälligem Sterben. Nur Überlebende können sich fortpflanzen → Einfluss auf Evolution.", uk: "6.4" }
+];
+
+var kaertchenDaten = [
+  { frage: "Was besagt der biologische Artbegriff?", antwort: "Lebewesen gehören zur selben Art, wenn sie untereinander fortpflanzungsfähige Nachkommen zeugen können.", uk: "6.2" },
+  { frage: "Was ist der morphologische Artbegriff?", antwort: "Lebewesen werden aufgrund ihres Baus (Gestalt/Form) in Arten eingeteilt. Entscheidend sind Gemeinsamkeiten und Unterschiede in der Bauweise.", uk: "6.2" },
+  { frage: "Was unterscheidet Homologie von Analogie?", antwort: "Homologie: gleicher Aufbau, unterschiedliche Funktion, gemeinsamer Ursprung. Analogie: gleiche Funktion, unterschiedlicher Aufbau, kein gemeinsamer Ursprung.", uk: "6.2" },
+  { frage: "Nenne ein Beispiel für eine Homologie.", antwort: "Die Vordergliedmaßen der Wirbeltiere: Menschenarm, Floss des Wals, Flügel der Fledermaus, Bein des Pferdes – gleicher Knochenaufbau, verschiedene Funktionen.", uk: "6.2" },
+  { frage: "Nenne ein Beispiel für eine Analogie.", antwort: "Die Flügel von Vögeln und Insekten: gleiche Funktion (Fliegen), aber unterschiedlicher Aufbau und kein gemeinsamer Ursprung.", uk: "6.2" },
+  { frage: "Was ist ein Kladogramm?", antwort: "Eine spezielle Art von Stammbaum, der Abstammungen und Verwandtschaften zeigt. Jede Verzweigung wird durch ein neu vorhandenes Merkmal begründet.", uk: "6.2" },
+  { frage: "Wie liest man ein Kladogramm?", antwort: "Je mehr Merkmale zwei Lebewesen gemeinsam haben, desto später trennen sich ihre Linien und desto näher sind sie verwandt.", uk: "6.2" },
+  { frage: "Was war der Ichthyostega?", antwort: "Ältestes bekanntes Landtier (≈ 350 Mio. Jahre). Übergangsform zwischen Fisch und Landwirbeltier – Beweis für die Veränderlichkeit von Arten.", uk: "6.2" },
+  { frage: "Was war der Archaeopteryx?", antwort: "Übergangsform zwischen Reptil (Dinosaurier) und Vogel. Zeigt, dass sich Vögel aus Reptilien entwickelt haben.", uk: "6.2" },
+  { frage: "Welche 7 Wirbeltierklassen gibt es?", antwort: "Rundmäuler, Knorpelfische, Knochenfische, Amphibien, Reptilien, Vögel, Säugetiere.", uk: "6.2" },
+  { frage: "Was besagt die Evolutionstheorie von Lamarck?", antwort: "Lebewesen verändern sich durch Gebrauch/Nichtgebrauch von Organen im Laufe des Lebens; diese erworbenen Eigenschaften werden an Nachkommen vererbt. (Heute widerlegt.)", uk: "6.3" },
+  { frage: "Was besagt die Evolutionstheorie von Darwin und Wallace?", antwort: "Innerhalb einer Art gibt es natürliche Variabilität. Gut angepasste Individuen überleben eher und pflanzen sich mehr fort (natürliche Selektion). Nur genetisch verankerte Merkmale werden vererbt.", uk: "6.3" },
+  { frage: "Warum gilt Lamarcks Evolutionstheorie als widerlegt?", antwort: "Im Laufe des Lebens erworbene Eigenschaften sind nicht im Erbgut verankert und werden daher nicht an die nächste Generation weitergegeben.", uk: "6.3" },
+  { frage: "Erkläre den langen Giraffenhals nach Darwin/Wallace.", antwort: "Natürliche Variabilität: manche Giraffen hatten zufällig längere Hälse. Knapper Nahrung: diese Giraffen erreichten mehr Laub und überlebten besser. Sie pflanzten sich mehr fort → langhalsige Nachkommen häufiger.", uk: "6.3" },
+  { frage: "Worin unterscheiden sich die beiden Evolutionstheorien beim Giraffenhals?", antwort: "Lamarck: Giraffen streckten bewusst Hals → Hals wurde länger → weitergegeben. Darwin/Wallace: Zufällig längere Hälse hatten Vorteil → mehr Nachkommen.", uk: "6.3" },
+  { frage: "Was ist Variabilität?", antwort: "Individuen einer Art unterscheiden sich leicht voneinander. Grundlage der Evolution. Ursachen: Rekombination (sexuelle Fortpflanzung) und Mutation.", uk: "6.4" },
+  { frage: "Was ist eine Mutation?", antwort: "Eine Veränderung im Erbgut. Kann spontan oder durch Strahlung/Chemikalien ausgelöst werden. Wird nur vererbt, wenn sie in einer Geschlechtszelle auftritt.", uk: "6.4" },
+  { frage: "Was bedeutet «Survival of the fittest»?", antwort: "Nicht das Überleben des Stärksten, sondern das Überleben des am besten an seine Umgebung angepassten Lebewesens. »fit« = passend (engl.).", uk: "6.4" },
+  { frage: "Was ist natürliche Selektion?", antwort: "Lebewesen mit gut angepassten Merkmalen überleben eher, pflanzen sich mehr fort und geben ihre Merkmale weiter. Schlecht angepasste sterben früher.", uk: "6.4" },
+  { frage: "Was ist sexuelle Selektion? Nenne ein Beispiel.", antwort: "Merkmale setzen sich durch, weil sie beim Geschlechtspartner attraktiv wirken. Beispiel: Pfau-Männchen mit besonders farbigen Federn werden öfter zur Paarung ausgewählt.", uk: "6.4" },
+  { frage: "Was sind Zufallseffekte in der Evolution?", antwort: "Größere Katastrophen (z. B. Überschwemmungen) führen zu zufälligem Überleben/Sterben – unabhängig von Anpassung. Beeinflussen Evolutionsvorgänge.", uk: "6.4" },
+  { frage: "Was ist Isolation? Nenne zwei Arten.", antwort: "Trennung von Individuen einer Art, sodass kein Erbmaterial ausgetauscht wird → neue Arten können entstehen. 1) Räumliche Isolation (Bsp. Grau- & Grünspecht) 2) Jahreszeitliche Isolation (Bsp. Gras- & Wasserfrosch).", uk: "6.4" },
+  { frage: "Was ist Spezialisierung/Nischenbildung?", antwort: "Individuen einer Art spezialisieren sich auf unterschiedliche Nahrung/Lebensraum. Nach mehreren Generationen können sie sich nicht mehr untereinander fortpflanzen → neue Arten.", uk: "6.4" },
+  { frage: "Was ist künstliche Selektion? Nenne ein Beispiel.", antwort: "Der Mensch greift bewusst in den Fortpflanzungserfolg ein (Zucht). Bsp.: Hunderassen, Milchkühe, Zuchtpflanzen.", uk: "6.4" },
+  { frage: "Wie veränderte sich der Sauerstoffgehalt in der Atmosphäre über die Zeit?", antwort: "Am Anfang kein O₂. Vor 3,5 Mia. J.: photosynthetisierende Bakterien produzieren O₂. Vor 700 Mio. J.: starker Anstieg, Ozonschicht entsteht. Heute: ca. 20 %.", uk: "6.1" },
+  { frage: "Welche Rolle spielten die ersten photosynthetisierenden Bakterien?", antwort: "Sie produzierten Sauerstoff. Dieser reagierte zunächst mit Eisensalzen im Meer. Als die Eisensalze aufgebraucht waren, reicherte sich O₂ im Meer und später in der Atmosphäre an.", uk: "6.1" },
+  { frage: "Warum starben vor ca. 2 Mia. Jahren viele Lebewesen?", antwort: "Der Sauerstoff, der sich im Meer anreicherte, war für die damaligen Lebewesen giftig → großes Massenaussterben.", uk: "6.1" },
+  { frage: "Welche Bedeutung hatte die Ozonschicht für die Evolution?", antwort: "Die Ozonschicht (O₃) schützte die Erde vor intensiver UV-Strahlung. Erst dadurch konnte Leben an Land entstehen (Pflanzen, Tiere).", uk: "6.1" },
+  { frage: "Was ist Rekombination?", antwort: "Durchmischung der Erbanlagen bei sexueller Fortpflanzung. Führt dazu, dass sich Nachkommen voneinander unterscheiden (Variabilität).", uk: "6.4" },
+  { frage: "Was ist der Unterschied zwischen natürlicher und künstlicher Selektion?", antwort: "Natürliche Selektion: Umweltbedingungen entscheiden, wer überlebt und sich fortpflanzt. Künstliche Selektion: der Mensch bestimmt bewusst, welche Individuen sich fortpflanzen dürfen.", uk: "6.4" },
+  { frage: "Welche Grenzen hat der biologische Artbegriff?", antwort: "Er lässt sich bei Fossilien nicht anwenden (Fossilien können nicht auf Fortpflanzungsfähigkeit geprüft werden). Fossilien sind versteinerter Funde von Lebewesen, älter als 10’000 Jahre.", uk: "6.2" }
+];
+
+var quizFragen = [
+  // LEICHT 6.1
+  { frage: "Wie hoch ist der heutige Sauerstoffgehalt in der Atmosphäre?", optionen: ["Ca. 20 %", "Ca. 5 %", "Ca. 40 %", "Ca. 35 %"], richtig: 0, feedback: "Richtig! Der heutige O₂-Gehalt beträgt ca. 20 %.", uk: "6.1", schwierigkeit: "leicht" },
+  { frage: "Wann entstanden die ersten Lebewesen auf der Erde?", optionen: ["Vor ca. 3,7 Milliarden Jahren", "Vor ca. 1,5 Milliarden Jahren", "Vor ca. 700 Millionen Jahren", "Vor ca. 4,5 Milliarden Jahren"], richtig: 0, feedback: "Korrekt! Die ersten Lebewesen (Urbakterien) entstanden vor ca. 3,7 Mia. Jahren.", uk: "6.1", schwierigkeit: "leicht" },
+  { frage: "Welche Schutzfunktion hat die Ozonschicht?", optionen: ["Sie schützt vor intensiver UV-Strahlung der Sonne.", "Sie erwärmt die Erde.", "Sie produziert Sauerstoff.", "Sie schützt vor Meteoriten."], richtig: 0, feedback: "Korrekt! Die Ozonschicht (O₃) schützt vor UV-Strahlung.", uk: "6.1", schwierigkeit: "leicht" },
+  // LEICHT 6.2
+  { frage: "Nach welchem Artbegriff gehören Hauskatze und Wildkatze zur gleichen Art?", optionen: ["Biologischer Artbegriff", "Morphologischer Artbegriff", "Beide", "Keiner der beiden"], richtig: 0, feedback: "Richtig! Hauskatze und Wildkatze können fortpflanzungsfähige Nachkommen zeugen → biologischer Artbegriff: eine Art.", uk: "6.2", schwierigkeit: "leicht" },
+  { frage: "Wieviele Wirbeltierklassen gibt es?", optionen: ["7", "5", "4", "10"], richtig: 0, feedback: "Richtig! Es gibt 7 Wirbeltierklassen: Rundmäuler, Knorpelfische, Knochenfische, Amphibien, Reptilien, Vögel, Säugetiere.", uk: "6.2", schwierigkeit: "leicht" },
+  // LEICHT 6.3
+  { frage: "Wessen Evolutionstheorie gilt heute als widerlegt?", optionen: ["Lamarcks Theorie", "Darwins Theorie", "Wallaces Theorie", "Darwins und Wallaces Theorie"], richtig: 0, feedback: "Richtig! Lamarcks Evolutionstheorie gilt als widerlegt.", uk: "6.3", schwierigkeit: "leicht" },
+  { frage: "Was bedeutet Evolution?", optionen: ["Die Entwicklung von Arten über mehrere Generationen", "Die Entstehung eines einzelnen Lebewesens", "Das Aussterben von Arten", "Die Einteilung von Lebewesen in Klassen"], richtig: 0, feedback: "Richtig! Evolution beschreibt die Entwicklung von Arten über mehrere Generationen.", uk: "6.3", schwierigkeit: "leicht" },
+  // LEICHT 6.4
+  { frage: "Was ist Variabilität?", optionen: ["Individuen einer Art unterscheiden sich leicht voneinander.", "Alle Individuen einer Art sind identisch.", "Lebewesen verändern sich im Laufe des Lebens.", "Lebewesen sterben aus."], richtig: 0, feedback: "Richtig! Variabilität bedeutet, dass sich die Individuen einer Art leicht voneinander unterscheiden.", uk: "6.4", schwierigkeit: "leicht" },
+  { frage: "Was bedeutet «Survival of the fittest»?", optionen: ["Überleben des am besten Angepassten", "Überleben des Stärksten", "Überleben des Schnellsten", "Überleben des Größten"], richtig: 0, feedback: "»Fit« kommt vom engl. »to fit« = passen. Es überleben nicht die Stärksten, sondern die am besten Angepassten.", uk: "6.4", schwierigkeit: "leicht" },
+  // MITTEL 6.1
+  { frage: "Warum starben vor ca. 2 Milliarden Jahren viele Lebewesen?", optionen: ["Sauerstoff, der sich im Meer anreicherte, war für sie giftig.", "Die Erde wurde zu kalt.", "Es gab zu wenig Nahrung.", "Ein Meteor traf die Erde."], richtig: 0, feedback: "Korrekt! O₂ aus der Fotosynthese der Bakterien reicherte sich an und war für die damaligen Lebewesen giftig.", uk: "6.1", schwierigkeit: "mittel" },
+  { frage: "Welche Rolle spielte die Fotosynthese bei der Entstehung der Ozonschicht?", optionen: ["Fotosynthese produzierte O₂, aus dem später O₃ gebildet wurde.", "Fotosynthese verbrauchte O₃.", "Fotosynthese hatte keinen Einfluss.", "Fotosynthese produzierte direkt O₃."], richtig: 0, feedback: "Richtig! Fotosynthese → O₂-Anreicherung → O₃ (Ozon) entstand in der Atmosphäre.", uk: "6.1", schwierigkeit: "mittel" },
+  // MITTEL 6.2
+  { frage: "Welche Aussage beschreibt eine Homologie korrekt?", optionen: ["Gleicher Aufbau, unterschiedliche Funktion, gemeinsamer Ursprung", "Gleiche Funktion, unterschiedlicher Aufbau, kein gemeinsamer Ursprung", "Gleicher Aufbau, gleiche Funktion, gemeinsamer Ursprung", "Unterschiedlicher Aufbau, gleiche Funktion, gemeinsamer Ursprung"], richtig: 0, feedback: "Richtig! Homologie = gleicher Aufbau, unterschiedliche Funktion, gemeinsamer Ursprung.", uk: "6.2", schwierigkeit: "mittel" },
+  { frage: "Welche Tiergruppe ist im Kladogramm der Wirbeltiere am nächsten mit den Reptilien verwandt?", optionen: ["Vögel", "Amphibien", "Säugetiere", "Knochenfische"], richtig: 0, feedback: "Richtig! Vögel und Reptilien trennen sich später im Kladogramm und sind daher näher verwandt.", uk: "6.2", schwierigkeit: "mittel" },
+  { frage: "Welche Aussage über den biologischen Artbegriff stimmt?", optionen: ["Er kann bei Fossilien nicht angewendet werden.", "Er ist weniger gebräuchlich als der morphologische Artbegriff.", "Er kann immer eindeutig angewendet werden.", "Er basiert nur auf dem äußeren Erscheinungsbild."], richtig: 0, feedback: "Richtig! Fossilien können nicht auf Fortpflanzungsfähigkeit geprüft werden → biologischer Artbegriff nicht anwendbar.", uk: "6.2", schwierigkeit: "mittel" },
+  // MITTEL 6.3
+  { frage: "Wie erklärt Lamarck den langen Giraffenhals?", optionen: ["Giraffen streckten Hals im Leben → Hals wurde länger → an Nachkommen vererbt.", "Zufällig längere Hälse waren vorteilhaft → mehr Nachkommen.", "Giraffen wählten Partner mit längerem Hals.", "Mutation führte zu längeren Hälsen."], richtig: 0, feedback: "Lamarck: Gebrauch → Veränderung im Leben → Vererbung. Heute widerlegt!", uk: "6.3", schwierigkeit: "mittel" },
+  { frage: "Warum ist Lamarcks Theorie widerlegt?", optionen: ["Im Laufe des Lebens erworbene Eigenschaften sind nicht im Erbgut verankert und werden nicht vererbt.", "Darwin hat einfach eine bessere Erklärung gefunden.", "Giraffen strecken ihre Hälse nicht.", "Lamarck hat keine Beweise geliefert."], richtig: 0, feedback: "Korrekt! Nur genetisch verankerte Eigenschaften werden vererbt. Erworbene Eigenschaften (z. B. Muskeln durch Sport) werden nicht weitergegeben.", uk: "6.3", schwierigkeit: "mittel" },
+  // MITTEL 6.4
+  { frage: "Was ist der Unterschied zwischen natürlicher und sexueller Selektion?", optionen: ["Natürliche Selektion: Anpassung an Umwelt. Sexuelle Selektion: Attraktivität für Geschlechtspartner.", "Sexuelle Selektion: Anpassung an Umwelt. Natürliche Selektion: Attraktivität.", "Beide sind identisch.", "Nur die natürliche Selektion wird von Darwin beschrieben."], richtig: 0, feedback: "Richtig! Natürliche Selektion = Überleben. Sexuelle Selektion = Fortpflanzungserfolg durch Attraktivität.", uk: "6.4", schwierigkeit: "mittel" },
+  { frage: "Wie entstanden aus einer Spechtart Grau- und Grünspecht?", optionen: ["Räumliche Isolation durch Gletscher in der Eiszeit → unterschiedliche Entwicklung → keine Kreuzung mehr möglich.", "Jahreszeitliche Isolation veränderte ihre Paarungszeiten.", "Mutation allein führte zur Aufspaltung.", "Künstliche Selektion durch den Menschen."], richtig: 0, feedback: "Korrekt! Die räumliche Trennung durch Gletscher verhinderte den Erbmaterialaustausch → zwei neue Arten entstanden.", uk: "6.4", schwierigkeit: "mittel" },
+  // SCHWER 6.1
+  { frage: "In welcher Reihenfolge entstanden diese Ereignisse? (frühestes zuerst) A: Ozonschicht entsteht B: Erste Bakterien mit Fotosynthese C: Massenaussterben vieler Lebewesen D: Erste Landpflanzen", optionen: ["B → C → A → D", "A → B → C → D", "B → A → D → C", "C → B → A → D"], richtig: 0, feedback: "Richtig! B (3,5 Mia. J.) → C (2 Mia. J.) → A (700 Mio. J.) → D (400 Mio. J.)", uk: "6.1", schwierigkeit: "schwer" },
+  { frage: "Warum konnten erst nach Entstehung der Ozonschicht Tiere und Pflanzen an Land leben?", optionen: ["Ohne Ozonschicht war die UV-Strahlung zu intensiv für Lebewesen an Land.", "Ohne Ozonschicht war es zu kalt.", "Ohne Ozonschicht war zu viel Sauerstoff vorhanden.", "Die Ozonschicht erzeugte Regen, der für Landpflanzen notwendig ist."], richtig: 0, feedback: "Richtig! Die Ozonschicht (O₃) schützt vor schädlicher UV-Strahlung. Ohne diesen Schutz wäre Leben an Land nicht möglich.", uk: "6.1", schwierigkeit: "schwer" },
+  // SCHWER 6.2
+  { frage: "Zwei Fischarten sehen ähnlich aus, können sich aber nicht untereinander fortpflanzen. Wie würde der jeweilige Artbegriff entscheiden?", optionen: ["Morphologisch: 1 Art (gleiche Form). Biologisch: 2 Arten (keine fortpfl.-fähigen Nachkommen).", "Morphologisch: 2 Arten. Biologisch: 1 Art.", "Beide: 1 Art.", "Beide: 2 Arten."], richtig: 0, feedback: "Korrekt! Dies zeigt, dass die beiden Artbegriffe zu unterschiedlichen Ergebnissen führen können.", uk: "6.2", schwierigkeit: "schwer" },
+  { frage: "Warum ist es sinnvoll, Stammbaumdarstellungen im Laufe der Zeit anzupassen?", optionen: ["Neue Fossilfunde und Erbmaterialanalysen liefern neue Erkenntnisse über Verwandtschaften.", "Wissenschaftler ändern einfach ihre Meinung.", "Lebewesen selbst verändern ihre Verwandtschaft.", "Stammbaumdarstellungen sind nie korrekt."], richtig: 0, feedback: "Richtig! Neue Fossilien oder DNA-Analysen zeigen bisher unbekannte Merkmale und Verwandtschaften → Stammbaumrevision.", uk: "6.2", schwierigkeit: "schwer" },
+  // SCHWER 6.3
+  { frage: "Darwin und Wallace haben ihre Theorie zuerst gemeinsam veröffentlicht. Warum wird die Theorie trotzdem hauptsächlich mit Darwin verbunden?", optionen: ["Darwin veröffentlichte später das ausführliche Buch «The Origin of Species», das auf großes Interesse stiess.", "Wallace hatte weniger Beweise.", "Darwin war bekannter als Wallace.", "Wallace zog seine Theorie zurück."], richtig: 0, feedback: "Korrekt! Darwins Buch war sehr ausführlich und stiess auf grosses öffentliches Interesse.", uk: "6.3", schwierigkeit: "schwer" },
+  // SCHWER 6.4
+  { frage: "In einem Teich leben kleine und große Fische einer Art. Mit einem Netz mit großen Maschen wird gefängt. Nach mehreren Generationen sind fast nur noch kleine Fische da. Welcher Evolutionsfaktor ist hauptsächlich beteiligt?", optionen: ["Natürliche Selektion (Selektionsfaktor: Fischnetz)", "Mutation der Fische", "Sexuelle Selektion", "Zufallseffekte"], richtig: 0, feedback: "Richtig! Das Fischnetz wirkt als Selektionsfaktor: kleine Fische entkommen, überleben, pflanzen sich fort → natürliche Selektion.", uk: "6.4", schwierigkeit: "schwer" },
+  { frage: "Warum können Gras- und Wasserfrosch trotz Möglichkeit zur Kreuzung als zwei Arten betrachtet werden?", optionen: ["Ihre Paarungszeiten fallen nicht zusammen (jahreszeitliche Isolation) → keine Kreuzung in der Praxis.", "Sie sehen zu unterschiedlich aus.", "Sie leben in verschiedenen Ländern.", "Sie fressen unterschiedliche Nahrung."], richtig: 0, feedback: "Korrekt! Jahreszeitliche Isolation: Grasfrosch paart sich im März, Wasserfrosch im Mai/Juni → obwohl theoretisch möglich, findet keine Kreuzung statt.", uk: "6.4", schwierigkeit: "schwer" },
+  { frage: "Erkläre, warum grosse Geweihträger trotz Nachteilen beim Fliehen vor Jägern das Geweih behalten haben.", optionen: ["Sexuelle Selektion: Weibchen bevorzugen Männchen mit grossem Geweih → mehr Fortpflanzungserfolg.", "Natürliche Selektion: Grosses Geweih schützt vor Feinden.", "Zufallseffekte: Geweih entstand durch Zufall.", "Künstliche Selektion durch Jäger."], richtig: 0, feedback: "Richtig! Sexuelle Selektion überwiegt den Nachteil: Weibchen wählen Männchen mit prächtigem Geweih → Fortpflanzungsvorteil setzt sich durch.", uk: "6.4", schwierigkeit: "schwer" }
+];
+
+// ========================
+// GLOSSAR
+// ========================
+function renderGlossar(daten) {
+  var liste = document.getElementById('glossarListe');
+  liste.innerHTML = '';
+  if (daten.length === 0) {
+    liste.innerHTML = '<li style="padding:16px; color:var(--text-hell); font-size:14px;">Kein Begriff gefunden.</li>';
+    return;
+  }
+  for (var i = 0; i < daten.length; i++) {
+    var el = document.createElement('li');
+    el.className = 'glossar-eintrag';
+    el.innerHTML = '<span class="glossar-term">' + daten[i].term + '<span class="glossar-badge">UK ' + daten[i].uk + '</span></span>' +
+                   '<span class="glossar-def">' + daten[i].def + '</span>';
+    liste.appendChild(el);
+  }
+}
+
+function filterGlossar() {
+  var q = document.getElementById('glossarSuche').value.toLowerCase();
+  var gefiltert = glossarDaten.filter(function(e) {
+    return e.term.toLowerCase().indexOf(q) >= 0 || e.def.toLowerCase().indexOf(q) >= 0;
+  });
+  renderGlossar(gefiltert);
+}
+
+// ========================
+// LERNKÄRTCHEN
+// ========================
+var aktuelleKaertchen = [];
+var kaertchenIndex = 0;
+
+function ladeKaertchen() {
+  var filter = document.getElementById('kaertchenFilter').value;
+  if (filter === 'alle') {
+    aktuelleKaertchen = kaertchenDaten.slice();
+  } else {
+    aktuelleKaertchen = kaertchenDaten.filter(function(k) { return k.uk === filter; });
+  }
+  kaertchenIndex = 0;
+  zeigeKaertchen();
+}
+
+function mischeKaertchen() {
+  for (var i = aktuelleKaertchen.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = aktuelleKaertchen[i];
+    aktuelleKaertchen[i] = aktuelleKaertchen[j];
+    aktuelleKaertchen[j] = tmp;
+  }
+  kaertchenIndex = 0;
+  zeigeKaertchen();
+}
+
+function zeigeKaertchen() {
+  var k = aktuelleKaertchen[kaertchenIndex];
+  document.getElementById('kaertchenFrage').textContent = k.frage;
+  document.getElementById('kaertchenAntwort').textContent = k.antwort;
+  document.getElementById('kaertchenFortschritt').textContent = (kaertchenIndex + 1) + ' / ' + aktuelleKaertchen.length;
+  var kEl = document.getElementById('dasKaertchen');
+  kEl.classList.remove('umgedreht');
+}
+
+function dreheKaertchen() {
+  document.getElementById('dasKaertchen').classList.toggle('umgedreht');
+}
+
+function naechstesKaertchen() {
+  kaertchenIndex = (kaertchenIndex + 1) % aktuelleKaertchen.length;
+  zeigeKaertchen();
+}
+
+function vorherigesKaertchen() {
+  kaertchenIndex = (kaertchenIndex - 1 + aktuelleKaertchen.length) % aktuelleKaertchen.length;
+  zeigeKaertchen();
+}
+
+// ========================
+// QUIZ
+// ========================
+var quizAktiv = [];
+var quizAktuell = 0;
+var quizPunkte = 0;
+var quizFalscheFragen = [];
+
+function startQuiz() {
+  var thema = document.getElementById('quizThema').value;
+  var schwierigkeit = document.getElementById('quizSchwierigkeit').value;
+  quizAktiv = quizFragen.filter(function(q) {
+    var themaOk = (thema === 'alle' || q.uk === thema);
+    var schwOk = (schwierigkeit === 'alle' || q.schwierigkeit === schwierigkeit);
+    return themaOk && schwOk;
+  });
+  // Mischen
+  for (var i = quizAktiv.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = quizAktiv[i]; quizAktiv[i] = quizAktiv[j]; quizAktiv[j] = tmp;
+  }
+  if (quizAktiv.length === 0) {
+    alert('Keine Fragen für diese Auswahl gefunden.');
+    return;
+  }
+  quizAktuell = 0;
+  quizPunkte = 0;
+  quizFalscheFragen = [];
+  document.getElementById('quizStart').style.display = 'none';
+  document.getElementById('quizErgebnis').style.display = 'none';
+  document.getElementById('quizBereich').style.display = 'block';
+  zeigeQuizFrage();
+}
+
+function zeigeQuizFrage() {
+  var q = quizAktiv[quizAktuell];
+  var prozent = (quizAktuell / quizAktiv.length) * 100;
+  document.getElementById('quizBalken').style.width = prozent + '%';
+  document.getElementById('quizFrageText').textContent = (quizAktuell + 1) + ' / ' + quizAktiv.length + ': ' + q.frage;
+  var optDiv = document.getElementById('quizOptionen');
+  optDiv.innerHTML = '';
+  for (var i = 0; i < q.optionen.length; i++) {
+    var btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = q.optionen[i];
+    btn.setAttribute('data-idx', i);
+    btn.onclick = function() { waehleOption(this); };
+    optDiv.appendChild(btn);
+  }
+  var fb = document.getElementById('quizFeedback');
+  fb.style.display = 'none'; fb.className = 'quiz-feedback';
+  document.getElementById('quizWeiterBtn').style.display = 'none';
+}
+
+function waehleOption(btn) {
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var q = quizAktiv[quizAktuell];
+  var optDiv = document.getElementById('quizOptionen');
+  var buttons = optDiv.querySelectorAll('.quiz-option');
+  for (var i = 0; i < buttons.length; i++) { buttons[i].disabled = true; }
+  var fb = document.getElementById('quizFeedback');
+  if (idx === q.richtig) {
+    btn.classList.add('richtig');
+    fb.textContent = '✅ ' + q.feedback;
+    fb.className = 'quiz-feedback richtig';
+    quizPunkte++;
+  } else {
+    btn.classList.add('falsch');
+    buttons[q.richtig].classList.add('richtig');
+    fb.textContent = '❌ Nicht ganz! ' + q.feedback;
+    fb.className = 'quiz-feedback falsch';
+    quizFalscheFragen.push({ frage: q.frage, richtig: q.optionen[q.richtig] });
+  }
+  fb.style.display = 'block';
+  document.getElementById('quizWeiterBtn').style.display = 'inline-block';
+}
+
+function naechsteFrage() {
+  quizAktuell++;
+  if (quizAktuell >= quizAktiv.length) {
+    zeigeQuizErgebnis();
+  } else {
+    zeigeQuizFrage();
+  }
+}
+
+function zeigeQuizErgebnis() {
+  document.getElementById('quizBereich').style.display = 'none';
+  var erg = document.getElementById('quizErgebnis');
+  erg.style.display = 'block';
+  var pct = Math.round((quizPunkte / quizAktiv.length) * 100);
+  document.getElementById('quizScoreZahl').textContent = quizPunkte + ' / ' + quizAktiv.length;
+  document.getElementById('quizScoreLabel').textContent = pct + ' % richtig';
+  var msg = '';
+  if (pct >= 90) msg = '⭐ Ausgezeichnet! Du beherrschst das Thema sehr gut.';
+  else if (pct >= 70) msg = '👍 Gut gemacht! Noch etwas üben für volle Punktzahl.';
+  else if (pct >= 50) msg = '📚 Weiter so! Wiederhole die Lernkärtchen und versuche es erneut.';
+  else msg = '🔄 Noch mehr Übung nötig. Schau dir die Übersicht und Lernkärtchen an!';
+  document.getElementById('quizScoreMsg').textContent = msg;
+  if (quizFalscheFragen.length > 0) {
+    var html = '<h3>Überprüfe diese Fragen nochmals:</h3>';
+    for (var i = 0; i < quizFalscheFragen.length; i++) {
+      html += '<div class="falsch-item"><div class="fi-frage">' + quizFalscheFragen[i].frage + '</div>' +
+              '<div class="fi-richtig">✅ ' + quizFalscheFragen[i].richtig + '</div></div>';
+    }
+    document.getElementById('falschReview').innerHTML = html;
+  } else {
+    document.getElementById('falschReview').innerHTML = '<p style="color:var(--gruen); font-weight:700;">🎉 Alle Fragen richtig!</p>';
+  }
+}
+
+function resetQuiz() {
+  document.getElementById('quizErgebnis').style.display = 'none';
+  document.getElementById('quizStart').style.display = 'block';
+}
+
+// ========================
+// TABS
+// ========================
+function zeigeTab(id, btn) {
+  var tabs = document.querySelectorAll('.inhalt');
+  for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove('aktiv'); }
+  var btns = document.querySelectorAll('.tab-btn');
+  for (var i = 0; i < btns.length; i++) { btns[i].classList.remove('aktiv'); }
+  document.getElementById('tab-' + id).classList.add('aktiv');
+  btn.classList.add('aktiv');
+}
+
+// ========================
+// INIT
+// ========================
+(function init() {
+  // Glossar alphabetisch sortieren
+  glossarDaten.sort(function(a, b) { return a.term.localeCompare(b.term, 'de'); });
+  renderGlossar(glossarDaten);
+  ladeKaertchen();
+})();
+</script>
+</body>
+</html>
